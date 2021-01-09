@@ -3,6 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm+all,django
 
 ### Django ###
+secrets.json
 *.log
 *.pot
 *.pyc
