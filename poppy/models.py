@@ -1,31 +1,17 @@
 from django.db import models
-from django.db.models import IntegerField, DateField
-from django.contrib.postgres.fields import ArrayField, JSONField
+from jsonfield import JSONField
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.conf import settings
-
-
-def default_available_services():
-    return {0: "오래 맡겨주세요", 1: "놀이 가능해요", 2: "약 먹일 수 있어요", 3: "목욕 가능해요", 4: "산책 가능해요", 5: "픽업 해드려요"}
+from multiselectfield import MultiSelectField
+from django.contrib.postgres.fields import ArrayField
 
 
 class PetOwner(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     e_mail = models.EmailField()
     address = models.CharField(max_length=200)
-
-    profile_img = models.ImageField(default='img/profile_img/profile_default.png', upload_to='img/profile_img')
-    room_img = models.ImageField(default='img/room_img/room_default.png', upload_to='img/room_img')
-
-    title = models.CharField(max_length=100)
-    content = models.CharField(max_length=2000)
-
-    is_expert = models.BooleanField(default=False)
-    available_days = ArrayField(DateField(null=True))
-    available_services = JSONField(default=default_available_services)
-    certificate = JSONField(default={})
 
     def __str__(self):
         return self.name
@@ -42,15 +28,44 @@ class PetOwner(models.Model):
         return Sum / comments_num
 
 
+default_available_services = (
+        (0, "오래 맡겨주세요"),
+        (1, "놀이 가능해요"),
+        (2, "약 먹일 수 있어요"),
+        (3, "목욕 가능해요"),
+        (4, "산책 가능해요"),
+        (5, "픽업 해드려요"),
+    )
+
+
+class Post(models.Model):
+    owner = models.OneToOneField(PetOwner, on_delete=models.CASCADE, primary_key=True)
+    profile_img = models.ImageField(default='img/profile_img/profile_default.png', upload_to='img/profile_img')
+    room_img = models.ImageField(default='img/room_img/room_default.png', upload_to='img/room_img')
+
+    title = models.CharField(max_length=200)
+    content = models.TextField(max_length=2000)
+
+    available_days = ArrayField(models.DateField(null=True))
+    available_services = MultiSelectField(choices=default_available_services)
+    certificate = JSONField(default=dict, dump_kwargs={'ensure_ascii': False}, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.owner) + " : " + str(self.title)
+
+
 class Fee(models.Model):
     owner = models.OneToOneField(PetOwner, on_delete=models.CASCADE, primary_key=True)
-    small = ArrayField(IntegerField(default=0), size=2)
-    middle = ArrayField(IntegerField(default=0), size=2)
-    large = ArrayField(IntegerField(default=0), size=2)
+    small = ArrayField(models.IntegerField(), size=2)
+    middle = ArrayField(models.IntegerField(), size=2)
+    large = ArrayField(models.IntegerField(), size=2)
+
+    def __str__(self):
+        return str(self.owner) + "'s Fee"
 
 
 class Pet(models.Model):
-    owner = owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE)
+    owner = models.ForeignKey(PetOwner, related_name='pets', on_delete=models.CASCADE)
     pet_img = models.ImageField(default='img/pet_img/pet_default.png', upload_to='img/pet_img')
     name = models.CharField(max_length=200)
     breed = models.CharField(max_length=100)
@@ -58,15 +73,40 @@ class Pet(models.Model):
     character = models.CharField(max_length=1000)
 
     def __str__(self):
-        return self.name
+        return str(self.owner) + "'s Pet"
 
 
 class Comment(models.Model):
-    owner = models.ForeignKey(PetOwner, related_name='comments', on_delete=models.CASCADE)
+    target_petsitter = models.ForeignKey(PetOwner, related_name='comments', on_delete=models.CASCADE)
     content = models.CharField(max_length=1000)
     posted_date = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.FloatField(default=5.0)
 
     def __str__(self):
-        return self.content[:15] + '.. -> ' + str(self.owner)
+        return self.content[:15] + '.. -> ' + str(self.target_petsitter)
+
+
+dog_sizes = (
+    ("소형견", "소형견"),
+    ("중형견", "중형견"),
+    ("중형견", "대형견"),
+)
+
+
+class Application(models.Model):
+    is_ongoing = models.BooleanField(default=True)
+    sender = models.ForeignKey(PetOwner, related_name='applications_as_sender', on_delete=models.CASCADE)
+    target_petsitter = models.ForeignKey(PetOwner, related_name='applications_as_receiver', on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+
+    phonenum_of_sender = models.BigIntegerField()
+
+    pet_breed = models.CharField(max_length=100)
+    pet_size = models.CharField(max_length=10, choices=dog_sizes)
+
+    total_fee = models.IntegerField()
+
+    def __str__(self):
+        return str(self.sender) + ' -> ' + str(self.target_petsitter)
