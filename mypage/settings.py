@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'poppy',
     'multiselectfield',
+    'django_better_admin_arrayfield',
 ]
 
 MIDDLEWARE = [

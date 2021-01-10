@@ -1,10 +1,9 @@
 from django.db import models
-from jsonfield import JSONField
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.conf import settings
 from multiselectfield import MultiSelectField
-from django.contrib.postgres.fields import ArrayField
+from django_better_admin_arrayfield.models.fields import ArrayField
 
 
 class PetOwner(models.Model):
@@ -46,9 +45,13 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField(max_length=2000)
 
-    available_days = ArrayField(models.DateField(null=True))
+    available_days = ArrayField(models.DateField(null=True, blank=True))
     available_services = MultiSelectField(choices=default_available_services)
-    certificate = JSONField(default=dict, dump_kwargs={'ensure_ascii': False}, null=True, blank=True)
+    certificate = ArrayField(
+        ArrayField(models.CharField(max_length=200), size=2),
+        default=list,
+        null=True, blank=True
+    )
 
     def __str__(self):
         return str(self.owner) + " : " + str(self.title)
@@ -77,10 +80,10 @@ class Pet(models.Model):
 
 
 class Comment(models.Model):
-    target_petsitter = models.ForeignKey(PetOwner, related_name='comments', on_delete=models.CASCADE)
+    target_petsitter = models.ForeignKey(PetOwner, related_name='comments_as_target_petsitter', on_delete=models.CASCADE)
     content = models.CharField(max_length=1000)
     posted_date = models.DateTimeField(default=timezone.now)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(PetOwner, related_name='comments_as_author', on_delete=models.CASCADE)
     score = models.FloatField(default=5.0)
 
     def __str__(self):
