@@ -108,7 +108,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'poppy_mvp2',
         'USER': 'alphatechnic',
-        'PASSWORD': get_secret("password"),
+        'PASSWORD': 'nea05200',
         'HOST': 'poppy-mvp2.cttuc0ak8pyn.ap-northeast-2.rds.amazonaws.com',
         'PORT': '5432',
     }
