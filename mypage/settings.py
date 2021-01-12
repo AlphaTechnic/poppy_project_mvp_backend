@@ -42,7 +42,9 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1',]
+ALLOWED_HOSTS = ['127.0.0.1',
+                 'ec2-13-209-159-94.ap-northeast-2.compute.amazonaws.com',
+                 ]
 
 
 # Application definition
@@ -99,13 +101,15 @@ WSGI_APPLICATION = 'mypage.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'poppy',
+        'NAME': 'poppy_mvp2',
         'USER': 'alphatechnic',
-        'PASSWORD': get_secret("password"),
-        'HOST': 'localhost',
+        'PASSWORD': 'nea05200',
+        'HOST': 'poppy-mvp2.cttuc0ak8pyn.ap-northeast-2.rds.amazonaws.com',
         'PORT': '5432',
     }
 }

@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 from django.conf import settings
 from multiselectfield import MultiSelectField
 from django_better_admin_arrayfield.models.fields import ArrayField
