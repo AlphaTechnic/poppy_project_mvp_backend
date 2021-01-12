@@ -105,7 +105,7 @@ class Application(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
-    phonenum_of_sender = models.BigIntegerField()
+    phonenum_of_sender = models.CharField(max_length=11)
 
     pet_breed = models.CharField(max_length=100)
     pet_size = models.CharField(max_length=10, choices=dog_sizes)

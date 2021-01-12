@@ -22,23 +22,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 #########################################################################################
-# secret_file = os.path.join(BASE_DIR, 'secrets.json')
-#
-# with open(secret_file) as f:
-#     secrets = json.loads(f.read())
-#
-#
-# def get_secret(setting, secrets=secrets):
-#     try:
-#         return secrets[setting]
-#     except KeyError:
-#         error_msg = "Set the {} environment variable".format(setting)
-#         raise ImproperlyConfigured(error_msg)
+secret_file = os.path.join(BASE_DIR, 'secrets.json')
+
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
 
 
-# SECRET_KEY = get_secret("SECRET_KEY")
+def get_secret(setting, secrets=secrets):
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_msg = "Set the {} environment variable".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
+
+SECRET_KEY = get_secret("SECRET_KEY")
 #########################################################################################
-SECRET_KEY = "bky+0x!sltb@=!j2usb1!3e4)c6l_@xc44)u9fnvd&ptxtnqz9"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -110,7 +109,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'poppy_mvp2',
         'USER': 'alphatechnic',
-        'PASSWORD': 'nea05200',
+        'PASSWORD': get_secret("password"),
         'HOST': 'poppy-mvp2.cttuc0ak8pyn.ap-northeast-2.rds.amazonaws.com',
         'PORT': '5432',
     }

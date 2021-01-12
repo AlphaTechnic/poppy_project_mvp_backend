@@ -1,5 +1,6 @@
 import datetime
 import locale
+import json
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth import authenticate
 from .models import PetOwner, Post, Fee, Pet, Comment, Application
@@ -9,7 +10,8 @@ from random import choice
 from json import dumps
 import requests
 from haversine import haversine
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 def get_distance(coordinate1, coordinate2):
     distance = haversine(coordinate1, coordinate2, unit='km')
@@ -165,33 +167,40 @@ def is_phone_num_authenticated(phone_num):
     return True
 
 
+@method_decorator(csrf_exempt)
 def apply(request):
-    senderID = request.POST['senderID']
-    target_petsitterID = request.POST['target_petsitterID']
-    phone_num = request.POST['phone_num']
-    pet_breed = request.POST['pet_breed']
-    pet_size = request.POST['pet_size']
-    start_time = request.POST['start_time']
-    end_time = request.POST['end_time']
-    total_fee = request.POST['total_fee']
+    data = json.loads(request.body.decode('utf-8'))
+
+    senderID = data['senderID']
+    target_petsitterID = data['target_petsitterID']
+    phone_num = data['phone_num']
+    pet_breed = data['pet_breed']
+    pet_size = data['pet_size']
+    start_time = data['start_time']
+    end_time = data['end_time']
+    total_fee = data['total_fee']
 
     # 핸드폰 번호 유효성 검사
     if is_phone_num_authenticated(phone_num):
-        return HttpResponse('no')
+        return HttpResponse('no 휴대폰 번호가 유효하지 않음')
 
     # 입력 날짜 유효성 검사. 펫시터의 돌봄 가능 날짜가 맞는지
     start_day_str = start_time[:10]
     end_day_str = end_time[:10]
 
-    start_day_obj = datetime.datetime.strptime(start_day_str, '%Y-%m-%d')
-    end_day_obj = datetime.datetime.strptime(end_day_str, '%Y-%m-%d')
-    available_days = Post.objects.filter(owner=User.objects.get_by_natural_key(target_petsitterID))
+    print(start_day_str, "!!!!!!!!!!!!!!!!!!!!")
+    print(end_day_str, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    start_day_obj = datetime.datetime.strptime(start_day_str, '%Y-%m-%d').date()
+    end_day_obj = datetime.datetime.strptime(end_day_str, '%Y-%m-%d').date()
+    available_days = Post.objects.filter(owner=User.objects.get_by_natural_key(target_petsitterID))[0].available_days
 
     while True:
-        if start_day_obj not in available_days:
-            return HttpResponse('no')
+        if start_day_obj.strftime('%Y%m%d') not in \
+                list(map(lambda available_day: available_day.strftime('%Y%m%d'), available_days)):
+            return HttpResponse('no 펫시터의 돌봄 가능 날짜에 해당하지 않음')
         if start_day_obj == end_day_obj:
             break
+        start_day_obj = start_day_obj + datetime.timedelta(days=1)
 
     # 저장
     Application.objects.create(
