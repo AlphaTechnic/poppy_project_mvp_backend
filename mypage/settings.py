@@ -36,7 +36,8 @@ def get_secret(setting, secrets=secrets):
         raise ImproperlyConfigured(error_msg)
 
 
-SECRET_KEY = get_secret("SECRET_KEY")
+# SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = "bky+0x!sltb@=!j2usb1!3e4)c6l_@xc44)u9fnvd&ptxtnqz9"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
