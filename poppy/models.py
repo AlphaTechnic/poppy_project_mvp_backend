@@ -7,7 +7,7 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 
 
 class PetOwner(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(max_length=200)
     e_mail = models.EmailField()
     address = models.CharField(max_length=200)
@@ -38,9 +38,9 @@ default_available_services = (
 
 
 class Post(models.Model):
-    owner = models.OneToOneField(PetOwner, on_delete=models.CASCADE, primary_key=True)
-    profile_img = models.ImageField(default='img/profile_img/profile_default.png', upload_to='img/profile_img')
-    room_img = models.ImageField(default='img/room_img/room_default.png', upload_to='img/room_img')
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
+    profile_img = models.URLField(max_length=300)
+    room_img = models.URLField(max_length=300)
 
     title = models.CharField(max_length=200)
     content = models.TextField(max_length=2000)
@@ -48,7 +48,7 @@ class Post(models.Model):
     available_days = ArrayField(models.DateField(null=True, blank=True))
     available_services = MultiSelectField(choices=default_available_services)
     certificate = ArrayField(
-        ArrayField(models.CharField(max_length=200), size=2),
+        ArrayField(models.CharField(max_length=200), size=3),
         default=list,
         null=True, blank=True
     )
@@ -58,7 +58,7 @@ class Post(models.Model):
 
 
 class Fee(models.Model):
-    owner = models.OneToOneField(PetOwner, on_delete=models.CASCADE, primary_key=True)
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     small = ArrayField(models.IntegerField(), size=2)
     middle = ArrayField(models.IntegerField(), size=2)
     large = ArrayField(models.IntegerField(), size=2)
@@ -68,8 +68,8 @@ class Fee(models.Model):
 
 
 class Pet(models.Model):
-    owner = models.ForeignKey(PetOwner, related_name='pets', on_delete=models.CASCADE)
-    pet_img = models.ImageField(default='img/pet_img/pet_default.png', upload_to='img/pet_img')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pet_img = models.URLField(max_length=300)
     name = models.CharField(max_length=200)
     breed = models.CharField(max_length=100)
     age = models.IntegerField(default=0)
@@ -80,14 +80,15 @@ class Pet(models.Model):
 
 
 class Comment(models.Model):
-    target_petsitter = models.ForeignKey(PetOwner, related_name='comments_as_target_petsitter', on_delete=models.CASCADE)
-    content = models.CharField(max_length=1000)
+    target_petsitter = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='applications_as_target_petsitter', on_delete=models.CASCADE)
+    content = models.TextField(max_length=1000)
     posted_date = models.DateTimeField(default=timezone.now)
-    author = models.ForeignKey(PetOwner, related_name='comments_as_author', on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='applications_as_author', on_delete=models.CASCADE)
     score = models.FloatField(default=5.0)
+    num_of_comments = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.content[:15] + '.. -> ' + str(self.target_petsitter)
+        return str(self.author) + ' -> ' + str(self.target_petsitter) + " : " + str(self.content[:8])
 
 
 dog_sizes = (
@@ -99,8 +100,9 @@ dog_sizes = (
 
 class Application(models.Model):
     is_ongoing = models.BooleanField(default=True)
-    sender = models.ForeignKey(PetOwner, related_name='applications_as_sender', on_delete=models.CASCADE)
-    target_petsitter = models.ForeignKey(PetOwner, related_name='applications_as_receiver', on_delete=models.CASCADE)
+    is_accepted = models.BooleanField(default=False)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='applications_as_sender', on_delete=models.CASCADE)
+    target_petsitter = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='applications_as_petsitter', on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 

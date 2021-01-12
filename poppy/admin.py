@@ -3,12 +3,13 @@ from .models import PetOwner, Post, Fee, Pet, Comment, Application
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
 
 
-class PostAdmin(admin.ModelAdmin, DynamicArrayMixin):
+class DynamicAdmin(admin.ModelAdmin, DynamicArrayMixin):
     pass
 
-admin.site.register(Fee)
+
+admin.site.register(Fee, DynamicAdmin)
 admin.site.register(PetOwner)
-admin.site.register(Post, PostAdmin)
+admin.site.register(Post, DynamicAdmin)
 admin.site.register(Pet)
 admin.site.register(Comment)
 admin.site.register(Application)
