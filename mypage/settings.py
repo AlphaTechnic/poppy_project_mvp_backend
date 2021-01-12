@@ -21,22 +21,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
-
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
-
-
-def get_secret(setting, secrets=secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = "Set the {} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
+#########################################################################################
+# secret_file = os.path.join(BASE_DIR, 'secrets.json')
+#
+# with open(secret_file) as f:
+#     secrets = json.loads(f.read())
+#
+#
+# def get_secret(setting, secrets=secrets):
+#     try:
+#         return secrets[setting]
+#     except KeyError:
+#         error_msg = "Set the {} environment variable".format(setting)
+#         raise ImproperlyConfigured(error_msg)
 
 
 # SECRET_KEY = get_secret("SECRET_KEY")
+#########################################################################################
 SECRET_KEY = "bky+0x!sltb@=!j2usb1!3e4)c6l_@xc44)u9fnvd&ptxtnqz9"
 
 
