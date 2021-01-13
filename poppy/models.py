@@ -7,12 +7,12 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 
 class PetOwner(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-    name = models.CharField(max_length=200)
-    e_mail = models.EmailField()
-    address = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, blank=True, default=' ')
+    email = models.EmailField(blank=True, default=' ')
+    address = models.CharField(max_length=200, blank=True, default=' ')
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.user
 
     def num_of_comments(self):
         return Comment.objects.filter(owner=self).count()
@@ -27,26 +27,30 @@ class PetOwner(models.Model):
 
 
 default_available_services = (
-        (0, "오래 맡겨주세요"),
-        (1, "놀이 가능해요"),
-        (2, "약 먹일 수 있어요"),
-        (3, "목욕 가능해요"),
-        (4, "산책 가능해요"),
-        (5, "픽업 해드려요"),
+        ("장기 예약", "장기 예약"),
+        ("실내 놀이", "실내 놀이"),
+        ("약물 복용", "약물 복용"),
+        ("목욕 가능", "목욕 가능"),
+        ("산책 가능", "산책 가능"),
+        ("집앞 픽업", "집앞 픽업"),
     )
 
 
 class Post(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-    profile_img = models.URLField(max_length=300)
-    room_img = models.URLField(max_length=300)
+    profile_img = models.ImageField(
+        default='poppy/img/profile_img/profile_default.png'
+    )
+    room_img = models.ImageField(
+        default='poppy/img/room_img/room_default.png'
+    )
 
     title = models.CharField(max_length=200)
     content = models.TextField(max_length=2000)
 
     available_days = ArrayField(models.DateField(null=True, blank=True))
     available_services = MultiSelectField(choices=default_available_services)
-    certificate = ArrayField(
+    certificates = ArrayField(
         ArrayField(models.CharField(max_length=200), size=3),
         default=list,
         null=True, blank=True
@@ -68,7 +72,9 @@ class Fee(models.Model):
 
 class Pet(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pet_img = models.URLField(max_length=300)
+    pet_img = models.ImageField(
+        default='poppy/img/pet_img/pet_default.png'
+    )
     name = models.CharField(max_length=200)
     breed = models.CharField(max_length=100)
     age = models.IntegerField(default=0)
