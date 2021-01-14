@@ -133,6 +133,7 @@ def get_petsitters_nearby(request, address, dist_or_fee):
 def petsitter_detail(request, petsitter_pk):
     #print(request.auth)
     petowner_obj = PetOwner.objects.filter(user_id=petsitter_pk)[0]
+    print(PetOwner.objects.all())
     post_obj = Post.objects.filter(owner_id=petsitter_pk)[0]
     fee_obj = Fee.objects.filter(owner_id=petsitter_pk)[0]
     pet_objs = Pet.objects.filter(owner_id=petsitter_pk)

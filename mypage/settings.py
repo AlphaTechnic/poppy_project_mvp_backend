@@ -193,5 +193,10 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# S3 Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = get_secret("access_key_id")
+# AWS Access
+AWS_SECRET_ACCESS_KEY = get_secret("secret_access_key")
+AWS_STORAGE_BUCKET_NAME = get_secret("s3_bucket_name")
