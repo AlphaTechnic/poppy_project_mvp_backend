@@ -41,15 +41,23 @@ def get_lat_lng(address):
     return result
 
 
+def get_fee_default_eq_0(petowner):
+    fee_objs = Fee.objects.filter(owner=petowner.user)
+    if len(fee_objs) == 0:
+        return 0
+    else:
+        return fee_objs[0].small[0]
+
+
 def get_petsitters_nearby(request, address, dist_or_fee):
     coordi_client = get_lat_lng(address)
     if dist_or_fee == 0:
         petowners = PetOwner.objects.all()
-
         if len(petowners) <= 30:
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
             )
+
         else:
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
@@ -61,14 +69,14 @@ def get_petsitters_nearby(request, address, dist_or_fee):
         if len(petowners) <= 30:
             petsitters = sorted(
                 petowners, key=lambda petowner: (
-                    Fee.objects.get(owner=petowner.user).small[0],
+                    get_fee_default_eq_0(petowner),
                     get_distance(coordi_client, get_lat_lng(petowner.address))
                 )
             )
         else:
             petsitters = sorted(
                 petowners, key=lambda petowner: (
-                    Fee.objects.get(owner=petowner.user).small[0],
+                    get_fee_default_eq_0(petowner),
                     get_distance(coordi_client, get_lat_lng(petowner.address))
                 )
             )[:30]
@@ -77,7 +85,7 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     for petsitter in petsitters:
         info = dict()
         #print(petsitter.user.id, "!!!!!!!!!!!!!!!!!!!!!!!!!")
-        info["pk"] = str(petsitter.user.id)
+        info["pk"] = petsitter.user.id
         info["address"] = petsitter.address
 
         distance = get_distance(coordi_client, get_lat_lng(petsitter.address))
@@ -88,9 +96,15 @@ def get_petsitters_nearby(request, address, dist_or_fee):
         else:
             info["distance"] = str(round(distance)) + 'km'
 
-        post_obj = Post.objects.get(owner=petsitter.user)
-        info["room_img"] = str(post_obj.room_img)
-        info["title"] = post_obj.title
+        post_objs = Post.objects.filter(owner_id=petsitter.user.id)
+        if len(post_objs) != 0:
+            post_obj = post_objs[0]
+            info["room_img"] = str(post_obj.room_img)
+            info["title"] = post_obj.title
+        else:
+            info["room_img"] = ""
+            info["title"] = ""
+
 
         comment_info = dict()
         comment_objs = Comment.objects.filter(target_petsitter=petsitter.user).order_by('-posted_date')
@@ -101,8 +115,12 @@ def get_petsitters_nearby(request, address, dist_or_fee):
 
         info["comment"] = comment_info
 
-        fee_obj = Fee.objects.get(owner=petsitter.user)
-        info["small_dog_fee"] = fee_obj.small
+        fee_objs = Fee.objects.filter(owner=petsitter.user)
+        if len(fee_objs) != 0:
+            fee_obj = fee_objs[0]
+            info["small_dog_fee"] = fee_obj.small
+        else:
+            info["small_dog_fee"] = ""
 
         petsitter_list.append(info)
 

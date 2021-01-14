@@ -9,7 +9,7 @@ class PetOwner(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(max_length=200, blank=True, default=' ')
     email = models.EmailField(blank=True, default=' ')
-    address = models.CharField(max_length=200, blank=True, default=' ')
+    address = models.CharField(max_length=200, blank=True, default='서울시')
 
     # def __str__(self):
     #     return self.user
@@ -62,7 +62,7 @@ class Post(models.Model):
 
 class Fee(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-    small = ArrayField(models.IntegerField(), size=2)
+    small = ArrayField(models.IntegerField(default=30000), size=2)
     middle = ArrayField(models.IntegerField(), size=2)
     large = ArrayField(models.IntegerField(), size=2)
 
