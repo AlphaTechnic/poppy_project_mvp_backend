@@ -193,10 +193,33 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# S3 Storage
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = get_secret("access_key_id")
 # AWS Access
+AWS_ACCESS_KEY_ID = get_secret("access_key_id")
 AWS_SECRET_ACCESS_KEY = get_secret("secret_access_key")
 AWS_STORAGE_BUCKET_NAME = get_secret("s3_bucket_name")
+AWS_REGION = 'ap-northeast-2'
+
+# S3 Storage
+AWS_S3_HOST = 's3.ap-northeast-2.amazonaws.com'
+AWS_QUERYSTRING_AUTH = False
+
+AWS_STORAGE_BUCKET_NAME = 'poppy-mvp'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME, AWS_REGION)
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'path/to/store/my/files/')
+
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# static files setting
+# STATICFILES_LOCATION = 'static'
+# STATICFILES_STORAGE = 'overmatch.settings.custom_storages.StaticStorage'
+# STATIC_URL = 'https://{}/{}/'.format(AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+#
+# # media files setting
+# MEDIAFILES_LOCATION = 'media'
+# MEDIA_URL = 'https://{}/{}/'.format(AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+# DEFAULT_FILE_STORAGE = 'overmatch.settings.custom_storages.MediaStorage'
+

@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 import smtplib
 from email.mime.text import MIMEText
 import os, json
@@ -15,7 +16,7 @@ from django.core.exceptions import ImproperlyConfigured
 import random
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-
+from .serializers import *
 
 def get_distance(coordinate1, coordinate2):
     distance = haversine(coordinate1, coordinate2, unit='km')
@@ -302,7 +303,7 @@ def get_secret(setting, secrets=secrets):
         raise ImproperlyConfigured(error_msg)
 
 @csrf_exempt
-def authenticate(request):
+def is_authenticated(request):
     data = json.loads(request.body)
     name = data['name']
     email = data['email']
@@ -353,25 +354,54 @@ class SignupView(APIView):
             return HttpResponse("wrong password input")
 
         else:
-            try:
-                # user 저장
-                user = User.objects.create_user(
-                    username=request.data['name'],
-                    password=password1,
-                )
-                user.save()
-                token = Token.objects.create(user=user)
-
-                # PetOwner 객체 생성
-                petowner_obj = PetOwner(user=user, name=request.data['name'], email=request.data['email'])
-                petowner_obj.save()
-
-                info = dict()
-                info["Token"] = token.key
-
-                return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
-            except:
+            # try:
+            petowner_objs = PetOwner.objects.filter(email=request.data['email'])
+            if len(petowner_objs) != 0:
                 return HttpResponse("already exist")
+
+            # user 저장
+            user = User.objects.create_user(
+                username=request.data['email'],
+                password=password1,
+            )
+            user.save()
+
+            # PetOwner 객체 생성
+            PetOwner.objects.create(
+                user=user,
+                name=request.data['name'],
+                email=request.data['email']
+            )
+
+            token = Token.objects.create(user=user)
+
+            info = dict()
+            info["Token"] = token.key
+
+            return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
+
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data['email']
+        petowner_objs = PetOwner.objects.filter(email=email)
+        if len(petowner_objs) == 0:
+            return HttpResponse("wrong email input")
+
+        petowner_obj = petowner_objs[0]
+        pk = petowner_obj.user.id
+
+        user = authenticate(username=request.data['email'], password=request.data['password'])
+        User_objs = User.objects.filter(username=user)
+
+        if len(User_objs) == 0:
+            return HttpResponse("wrong password input")
+
+        token = Token.objects.filter(user_id=pk)[0]
+        info = dict()
+        info["Token"] = token.key
+
+        return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
 
 
 def price_to_int(price):

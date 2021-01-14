@@ -8,7 +8,7 @@ from django_better_admin_arrayfield.models.fields import ArrayField
 class PetOwner(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(max_length=200, blank=True, default=' ')
-    email = models.EmailField(blank=True, default=' ')
+    email = models.EmailField(blank=True, unique=True)
     address = models.CharField(max_length=200, blank=True, default='서울시')
 
     # def __str__(self):
