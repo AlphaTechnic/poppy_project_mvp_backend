@@ -131,54 +131,58 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     return HttpResponse(dumps(result, ensure_ascii=False), content_type='application/json')
 
 
-def petsitter_detail(request, petsitter_pk):
-    #print(request.auth)
-    petowner_obj = PetOwner.objects.filter(user_id=petsitter_pk)[0]
-    print(PetOwner.objects.all())
-    post_obj = Post.objects.filter(owner_id=petsitter_pk)[0]
-    fee_obj = Fee.objects.filter(owner_id=petsitter_pk)[0]
-    pet_objs = Pet.objects.filter(owner_id=petsitter_pk)
-    comment_objs = Comment.objects.filter(target_petsitter_id=petsitter_pk)
+class PetsitterView(APIView):
+    def get(self, request, petsitter_pk):
+        #print(request.auth)
+        petowner_obj = PetOwner.objects.filter(user_id=petsitter_pk)[0]
+        post_obj = Post.objects.filter(owner_id=petsitter_pk)[0]
+        fee_obj = Fee.objects.filter(owner_id=petsitter_pk)[0]
+        pet_objs = Pet.objects.filter(owner_id=petsitter_pk)
+        comment_objs = Comment.objects.filter(target_petsitter_id=petsitter_pk)
 
-    info = dict()
-    info["room_img"] = str(post_obj.room_img)
-    info["name"] = petowner_obj.name
-    info["small_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.small))
-    info["middle_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.middle))
-    info["large_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.large))
+        info = dict()
+        info["room_img"] = str(post_obj.room_img)
+        info["name"] = petowner_obj.name
+        # info["small_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.small))
+        # info["middle_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.middle))
+        # info["large_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.large))
+        info["small_dog_fee"] = fee_obj.small
+        info["middle_dog_fee"] = fee_obj.middle
+        info["large_dog_fee"] = fee_obj.large
 
-    info["title"] = post_obj.title
-    info["content"] = post_obj.content
+        info["title"] = post_obj.title
+        info["content"] = post_obj.content
 
-    pets = []
-    for pet in pet_objs:
-        pet_info = dict()
-        pet_info["pet_img"] = str(pet.pet_img)
-        pet_info["name"] = pet.name
-        pet_info["breed"] = pet.breed
-        pet_info["age"] = str(pet.age) + "살"
-        pet_info["character"] = pet.character
-        pets.append(pet_info)
-    info["pets"] = pets
+        pets = []
+        for pet in pet_objs:
+            pet_info = dict()
 
-    if len(comment_objs) == 0:
-        comment_info = dict()
+            pet_info["pet_img"] = str(pet.pet_img)
+            pet_info["name"] = pet.name
+            pet_info["breed"] = pet.breed
+            pet_info["age"] = str(pet.age) + "살"
+            pet_info["character"] = pet.character
+            pets.append(pet_info)
+        info["pets"] = pets
 
-    else:
-        comment_info = dict()
-        comment_recent = sorted(
-            comment_objs, key=lambda comment: comment.posted_date, reverse=True
-        )[0]
-        comment_info["name"] = PetOwner.objects.get(user=comment_recent.author).name
-        comment_info["content"] = comment_recent.content
-        comment_info["date"] = comment_recent.posted_date.strftime('%Y. %#m. %d')
-        comment_info["score"] = comment_recent.score
-        comment_info["num_of_comments"] = comment_recent.num_of_comments
+        if len(comment_objs) == 0:
+            comment_info = dict()
 
-    info["comment"] = comment_info
+        else:
+            comment_info = dict()
+            comment_recent = sorted(
+                comment_objs, key=lambda comment: comment.posted_date, reverse=True
+            )[0]
+            comment_info["name"] = PetOwner.objects.get(user=comment_recent.author).name
+            comment_info["content"] = comment_recent.content
+            comment_info["date"] = comment_recent.posted_date.strftime('%Y. %#m. %d')
+            comment_info["score"] = comment_recent.score
+            comment_info["num_of_comments"] = comment_recent.num_of_comments
 
-    info["available_services"] = post_obj.available_services
-    return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
+        info["comment"] = comment_info
+        info["available_services"] = post_obj.available_services
+
+        return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
 
 
 # def comment num_of_comments랑 score 계산
@@ -404,6 +408,17 @@ class LoginView(APIView):
         return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
 
 
+class NameView(APIView):
+    @method_decorator(csrf_exempt)
+    def get(self, request):
+        pk = request.user.id
+        name = PetOwner.objects.filter(user_id=pk)[0].name
+        info = dict()
+        info["name"] = name
+
+        return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
+
+
 def price_to_int(price):
     # '30,000원' -> 30000
     return int(price.replace(",", "").replace("원", ""))
@@ -455,3 +470,12 @@ class EditProfileView(APIView):
 
         return HttpResponse("ok")
 
+
+class Image(APIView):
+    @method_decorator(csrf_exempt)
+    def post(selfself, request, format=None):
+        serializers = PhotoSerializer(data = request.data)
+        if serializers.is_valid():
+            serializers.save()
+            return HttpResponse(serializers.data, status=status.HTTP_201_CREATED)
+        return HttpResponse(serializers.errors, status=status.HTTP_400_BAD_REQUEST)

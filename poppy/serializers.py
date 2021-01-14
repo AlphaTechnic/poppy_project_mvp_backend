@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import Post, Pet
+from .models import test
 
 
 class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Post, Pet
+        model = test
         fields = ('__all__')
