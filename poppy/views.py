@@ -1,22 +1,24 @@
 import datetime
-from django.shortcuts import HttpResponse
-from .models import PetOwner, Post, Fee, Pet, Comment, Application
+import smtplib
+import os, json
+import random
 from json import dumps
 import requests
+from django.shortcuts import HttpResponse
+from .models import PetOwner, Post, Fee, Pet, Comment, Application
 from haversine import haversine
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-import smtplib
 from email.mime.text import MIMEText
-import os, json
 from django.core.exceptions import ImproperlyConfigured
-import random
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .serializers import *
+from rest_framework.response import Response
+
 
 def get_distance(coordinate1, coordinate2):
     distance = haversine(coordinate1, coordinate2, unit='km')
@@ -100,11 +102,11 @@ def get_petsitters_nearby(request, address, dist_or_fee):
         post_objs = Post.objects.filter(owner_id=petsitter.user.id)
         if len(post_objs) != 0:
             post_obj = post_objs[0]
-            info["room_img"] = str(post_obj.room_img)
+            info["room_img"] = post_obj.room_img
             info["title"] = post_obj.title
         else:
-            info["room_img"] = ""
-            info["title"] = ""
+            info["room_img"] = "https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/room_img/default_room.png"
+            info["title"] = "https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/room_img/default_room.png"
 
 
         comment_info = dict()
@@ -121,7 +123,8 @@ def get_petsitters_nearby(request, address, dist_or_fee):
             fee_obj = fee_objs[0]
             info["small_dog_fee"] = fee_obj.small
         else:
-            info["small_dog_fee"] = ""
+            #info["small_dog_fee"] = ""
+            continue
 
         petsitter_list.append(info)
 
@@ -141,7 +144,7 @@ class PetsitterView(APIView):
         comment_objs = Comment.objects.filter(target_petsitter_id=petsitter_pk)
 
         info = dict()
-        info["room_img"] = str(post_obj.room_img)
+        info["room_img"] = post_obj.room_img
         info["name"] = petowner_obj.name
         # info["small_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.small))
         # info["middle_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.middle))
@@ -157,7 +160,7 @@ class PetsitterView(APIView):
         for pet in pet_objs:
             pet_info = dict()
 
-            pet_info["pet_img"] = str(pet.pet_img)
+            pet_info["pet_img"] = pet.pet_img
             pet_info["name"] = pet.name
             pet_info["breed"] = pet.breed
             pet_info["age"] = str(pet.age) + "살"
@@ -419,8 +422,8 @@ class NameView(APIView):
         return HttpResponse(dumps(info, ensure_ascii=False), content_type='application/json')
 
 
-def price_to_int(price):
-    # '30,000원' -> 30000
+def price_formatting(price):
+    # '30,000원' -> 30,000
     return int(price.replace(",", "").replace("원", ""))
 
 
@@ -434,6 +437,13 @@ class EditProfileView(APIView):
         Fee.objects.filter(owner_id=petsitter_pk).delete()
         Pet.objects.filter(owner_id=petsitter_pk).delete()
 
+        serializers = PhotoSerializer(data=data['room_img'])
+        # print(serializers, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        if serializers.is_valid():
+            serializers.save()
+            Response(serializers.data, status=status.HTTP_201_CREATED)
+        Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
         Post.objects.create(
             owner_id=petsitter_pk,
             room_img=data['room_img'],
@@ -446,9 +456,9 @@ class EditProfileView(APIView):
 
         Fee.objects.create(
             owner_id=petsitter_pk,
-            small=list(map(price_to_int, data['small_dog_fee'])),
-            middle=list(map(price_to_int, data['middle_dog_fee'])),
-            large=list(map(price_to_int, data['large_dog_fee']))
+            small=list(map(price_formatting, data['small_dog_fee'])),
+            middle=list(map(price_formatting, data['middle_dog_fee'])),
+            large=list(map(price_formatting, data['large_dog_fee']))
         )
 
         Pet.objects.filter(owner_id=petsitter_pk).delete()
@@ -473,9 +483,10 @@ class EditProfileView(APIView):
 
 class Image(APIView):
     @method_decorator(csrf_exempt)
-    def post(selfself, request, format=None):
-        serializers = PhotoSerializer(data = request.data)
+    def post(self, request, format=None):
+        serializers = PhotoSerializer(data=request.data)
+        #print(serializers, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         if serializers.is_valid():
             serializers.save()
-            return HttpResponse(serializers.data, status=status.HTTP_201_CREATED)
-        return HttpResponse(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)

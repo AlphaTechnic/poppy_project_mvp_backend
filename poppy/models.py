@@ -39,12 +39,12 @@ default_available_services = (
 class Post(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
     profile_img = models.ImageField(
-        default='profile_img/default_profile.png',
-        upload_to='profile_img'
+        default="https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/profile_img/default_profile.png",
+        upload_to='https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/profile_img'
     )
     room_img = models.ImageField(
-        default='room_img/default_room.png',
-        upload_to='room_img'
+        default='https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/room_img/default_room.png',
+        upload_to='https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/room_img'
     )
 
     title = models.CharField(max_length=200)
@@ -75,8 +75,8 @@ class Fee(models.Model):
 class Pet(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     pet_img = models.ImageField(
-        default='pet_img/default_pet.png',
-        upload_to='pet_img'
+        default='https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/pet_img/default_pet.png',
+        upload_to='https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/pet_img'
     )
     name = models.CharField(max_length=200)
     breed = models.CharField(max_length=100)
