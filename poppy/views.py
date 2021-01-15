@@ -57,8 +57,6 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     if dist_or_fee == 0:
         petowners = PetOwner.objects.all()
         if len(petowners) <= 30:
-            for i in petowners:
-                print(get_distance(coordi_client, get_lat_lng(i.address)))
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
             )
@@ -88,7 +86,6 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     petsitter_list = []
     for petsitter in petsitters:
         info = dict()
-        #print(petsitter.user.id, "!!!!!!!!!!!!!!!!!!!!!!!!!")
         info["pk"] = petsitter.user.id
         info["address"] = petsitter.address
 
@@ -145,7 +142,7 @@ class PetsitterView(APIView):
         comment_objs = Comment.objects.filter(target_petsitter_id=petsitter_pk)
 
         info = dict()
-        info["room_img"] = post_obj.room_img
+        info["room_img"] = str(post_obj.room_img)
         info["name"] = petowner_obj.name
         # info["small_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.small))
         # info["middle_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.middle))
@@ -161,7 +158,7 @@ class PetsitterView(APIView):
         for pet in pet_objs:
             pet_info = dict()
 
-            pet_info["pet_img"] = pet.pet_img
+            pet_info["pet_img"] = str(pet.pet_img)
             pet_info["name"] = pet.name
             pet_info["breed"] = pet.breed
             pet_info["age"] = str(pet.age) + "살"
