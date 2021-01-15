@@ -56,6 +56,9 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     coordi_client = get_lat_lng(address)
     if dist_or_fee == 0:
         petowners = PetOwner.objects.all()
+        if len(petowners) <= 30:
+            for i in petowners:
+                print(get_distance(coordi_client, get_lat_lng(i.address)))
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
             )
@@ -73,6 +76,7 @@ def get_petsitters_nearby(request, address, dist_or_fee):
                     get_distance(coordi_client, get_lat_lng(petowner.address))
                 )
             )
+
         else:
             petsitters = sorted(
                 petowners, key=lambda petowner: (
