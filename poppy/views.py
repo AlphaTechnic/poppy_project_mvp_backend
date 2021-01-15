@@ -56,11 +56,9 @@ def get_petsitters_nearby(request, address, dist_or_fee):
     coordi_client = get_lat_lng(address)
     if dist_or_fee == 0:
         petowners = PetOwner.objects.all()
-        if len(petowners) <= 30:
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
             )
-
         else:
             petsitters = sorted(
                 petowners, key=lambda petowner: get_distance(coordi_client, get_lat_lng(petowner.address))
@@ -68,7 +66,6 @@ def get_petsitters_nearby(request, address, dist_or_fee):
 
     elif dist_or_fee == 1:
         petowners = PetOwner.objects.all()
-
         if len(petowners) <= 30:
             petsitters = sorted(
                 petowners, key=lambda petowner: (
@@ -102,7 +99,7 @@ def get_petsitters_nearby(request, address, dist_or_fee):
         post_objs = Post.objects.filter(owner_id=petsitter.user.id)
         if len(post_objs) != 0:
             post_obj = post_objs[0]
-            info["room_img"] = post_obj.room_img
+            info["room_img"] = str(post_obj.room_img)
             info["title"] = post_obj.title
         else:
             info["room_img"] = "https://poppy-mvp.s3.ap-northeast-2.amazonaws.com/room_img/default_room.png"
