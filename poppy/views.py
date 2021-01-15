@@ -142,6 +142,7 @@ class PetsitterView(APIView):
         comment_objs = Comment.objects.filter(target_petsitter_id=petsitter_pk)
 
         info = dict()
+        info["profile_img"] = str(post_obj.profile_img)
         info["room_img"] = str(post_obj.room_img)
         info["name"] = petowner_obj.name
         # info["small_dog_fee"] = list(map(lambda number: format(number, ',') + '원', fee_obj.small))
@@ -157,7 +158,7 @@ class PetsitterView(APIView):
         pets = []
         for pet in pet_objs:
             pet_info = dict()
-
+            print(str(pet.pet_img))
             pet_info["pet_img"] = str(pet.pet_img)
             pet_info["name"] = pet.name
             pet_info["breed"] = pet.breed
