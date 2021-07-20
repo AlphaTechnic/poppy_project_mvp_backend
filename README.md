@@ -4,7 +4,7 @@
 
 - 이웃 동네 반려견 돌봄 품앗이 서비스
 
-- <img src="./imgs_for_document/landing_page.png" alt="img" style="zoom:25%;" />
+- ![img](./imgs_for_document/landing_page.png)
 
 
 
@@ -63,7 +63,7 @@
 
 ## Service imgs
 
-<img src="./imgs_for_document/TESTING_1.png" alt="img" style="zoom: 25%;" />
+![img](./imgs_for_document/TESTING_1.png)
 
 ![img](./imgs_for_document/MVP3.png)
 
