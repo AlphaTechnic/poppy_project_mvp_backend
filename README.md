@@ -56,7 +56,13 @@
 ## Usage
 
 ```shell
-(myvenv) ~/polls_by_django$ python manage.py runserver
+(myvenv) ~/poppy$ python manage.py makemigrations
+(myvenv) ~/poppy$ python manage.py migrate
+```
+
+
+```shell
+(myvenv) ~/poppy$ python manage.py runserver
 ```
 
 
