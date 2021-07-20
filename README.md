@@ -39,17 +39,17 @@
 
 - Install Django
 
-  - pip upgrade
+    - install Django
 
-    ```shell
-    (myvenv) ~$ python3 -m pip install --upgrade pip
-    ```
-
-  - install Django
-
-    ```shell
-    (myvenv) ~$ pip install -r requirements.txt
-    ```
+      ```shell
+      (myvenv) ~$ pip install -r requirements.txt
+      ```
+      
+      - pip upgrade
+    
+       ```shell
+      (myvenv) ~$ python3 -m pip install --upgrade pip
+       ```
 
 
 
